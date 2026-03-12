@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-hover: #334155;
+  --accent: #38bdf8;
+  --accent-muted: #0ea5e9;
+  --success: #34d399;
+  --warning: #fbbf24;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
