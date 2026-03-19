@@ -7,9 +7,16 @@ const DATA_SOURCES = [
   {
     id: "jira",
     name: "Jira",
-    description: "Sprint velocity, issues, cycle time, burndown",
-    envVars: ["JIRA_DOMAIN", "JIRA_EMAIL", "JIRA_API_TOKEN"],
+    description: "GSRR SLO compliance, sprint velocity, issues, cycle time",
+    envVars: ["JIRA_EMAIL", "JIRA_API_TOKEN", "JIRA_BASE_URL"],
     docsUrl: "https://developer.atlassian.com/cloud/jira/platform/rest/v3/",
+  },
+  {
+    id: "jellyfish",
+    name: "Jellyfish",
+    description: "KTLO allocations, Lever metrics, engineering effort",
+    envVars: ["JELLYFISH_API_TOKEN"],
+    docsUrl: "https://help.jellyfish.co/hc/en-us/articles/29135614810893-Jellyfish-API-Beta",
   },
   {
     id: "github",
