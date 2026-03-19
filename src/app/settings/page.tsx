@@ -40,13 +40,6 @@ const DATA_SOURCES = [
     docsUrl: "https://api.slack.com/",
   },
   {
-    id: "vercel",
-    name: "Vercel",
-    description: "Deployments, build success rate",
-    envVars: ["VERCEL_TOKEN"],
-    docsUrl: "https://vercel.com/docs/rest-api",
-  },
-  {
     id: "custom",
     name: "Custom API",
     description: "Any REST API with HTTPS",
@@ -66,9 +59,6 @@ export default function SettingsPage() {
           <nav className="flex gap-4">
             <Link href="/" className="text-slate-400 hover:text-white transition-colors text-sm">
               Dashboard
-            </Link>
-            <Link href="/login" className="text-slate-400 hover:text-white transition-colors text-sm">
-              Sign In
             </Link>
           </nav>
         </div>
@@ -109,7 +99,7 @@ export default function SettingsPage() {
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Environment variables needed</h4>
                     <p className="text-slate-400 text-sm mb-3">
                       Add these to <code className="bg-slate-700 px-1 rounded">.env.local</code> for local
-                      development, and to Vercel Environment Variables for production.
+                      development, and to your server's environment variables for production.
                     </p>
                     <ul className="space-y-1">
                       {source.envVars.map((v) => (

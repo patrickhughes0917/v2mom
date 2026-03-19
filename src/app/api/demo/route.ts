@@ -63,7 +63,7 @@ export async function GET() {
     recentActivity: [
       { id: 1, title: "Sprint planning completed", source: "Jira", time: "2 min ago" },
       { id: 2, title: "New incident reported", source: "Incident.io", time: "15 min ago" },
-      { id: 3, title: "Deployment to production", source: "Vercel", time: "1 hour ago" },
+      { id: 3, title: "Deployment to production", source: "Deploy", time: "1 hour ago" },
       { id: 4, title: "Slack channel created", source: "Slack", time: "2 hours ago" },
     ],
   };

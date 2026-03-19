@@ -42,12 +42,6 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             >
               Data Sources
             </Link>
-            <Link
-              href="/login"
-              className="text-slate-400 hover:text-white transition-colors text-sm"
-            >
-              Sign In
-            </Link>
           </nav>
         </div>
       </header>
