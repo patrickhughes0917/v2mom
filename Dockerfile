@@ -19,7 +19,6 @@ RUN mkdir -p .next/cache && chown -R node:node /app
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public 2>/dev/null || true
 
 RUN chown -R node:node /app
 
