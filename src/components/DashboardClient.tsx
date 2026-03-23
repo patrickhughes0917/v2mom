@@ -90,6 +90,9 @@ export default function DashboardClient({ data }: DashboardClientProps) {
             <p className="text-slate-500 text-xs mt-2">
               Connect Jira, Jellyfish, or other data sources to show live metrics here.
             </p>
+            <p className="text-slate-600 text-xs mt-1">
+              EO-52 · Test deployment workflow ✓
+            </p>
           </div>
           <div>
             <ActivityFeed items={data.recentActivity} />
