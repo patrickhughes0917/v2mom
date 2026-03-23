@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Create a Jira ticket in the EO project to track the V2MOM Dashboard.
- * Run from project root: node scripts/create-eo-ticket.js
+ * Create a Jira ticket in the EO project.
+ * Run from project root: node scripts/create-eo-ticket.js [summary]
+ * Example: node scripts/create-eo-ticket.js "Test deployment workflow"
  * Requires: JIRA_EMAIL, JIRA_API_TOKEN, JIRA_BASE_URL in .env.local or environment
  */
 
@@ -36,10 +37,12 @@ if (!email || !token) {
 
 const auth = Buffer.from(`${email}:${token}`).toString("base64");
 
+const summary = process.argv[2] || "Engineering V2MOM Dashboard – Internal hosting setup";
+
 const body = {
   fields: {
     project: { key: "EO" },
-    summary: "Engineering V2MOM Dashboard – Internal hosting setup",
+    summary,
     issuetype: { name: "Task" },
     description: {
       type: "doc",
@@ -101,6 +104,7 @@ async function create() {
 
   const data = await res.json();
   console.log(`Created: ${baseUrl}/browse/${data.key}`);
+  console.log(`KEY: ${data.key}`);
 }
 
 create().catch((e) => {
