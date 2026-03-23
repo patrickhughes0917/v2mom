@@ -1,0 +1,124 @@
+name: Test, Build, and Publish to ECR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+      - closed
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REGISTRY: 337909757619.dkr.ecr.us-west-2.amazonaws.com
+  ECR_REPOSITORY: engineering-v2mom-dashboard
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      publish-override: ${{ steps.publish.outputs.publish-override }}
+      is-merge-event: >-
+        ${{ github.event.action == 'closed' && github.event.pull_request.merged == true }}
+      is-publish-event: >-
+        ${{ github.event.action == 'closed' && github.event.pull_request.merged == true || steps.publish.outputs.publish-override == 'true' }}
+      is-pre-release-event: >-
+        ${{ github.event.action != 'closed' && github.event.pull_request.merged != true && steps.publish.outputs.publish-override == 'true' }}
+      githash: ${{ steps.publish.outputs.githash }}
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 #v4.1.6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.after }}
+
+      - name: Check Publish Override
+        id: publish
+        run: |
+          MSG=$(git log --format=%B -n 1 ${{ github.event.after }})
+          if [[ $MSG == *"[publish]"* ]]; then
+            echo "publish-override=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish-override=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
+            echo "githash=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          else
+            echo "githash=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    runs-on: gha-runner-ecr-publish
+    needs: prep
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Cache npm
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build app
+        run: npm run build
+
+  publish:
+    needs: [prep, build]
+    if: needs.prep.outputs.is-publish-event == 'true'
+    runs-on: gha-runner-ecr-publish
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - name: Check out code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build Docker image
+        run: docker build -t engineering-v2mom-dashboard .
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+      - name: Push Docker image to ECR
+        env:
+          IS_MERGE_EVENT: ${{ needs.prep.outputs.is-merge-event }}
+        run: |
+          docker tag engineering-v2mom-dashboard $ECR_REGISTRY/$ECR_REPOSITORY:${{ needs.prep.outputs.githash }}
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ needs.prep.outputs.githash }}
+
+          if [ "$IS_MERGE_EVENT" = "true" ]; then
+            docker tag engineering-v2mom-dashboard $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          fi
+
+      - name: Output to Step Summary
+        run: |
+          SUMMARY=$'# Published Images to ECR\n'
+          SUMMARY+=$'## Images\n'
+          SUMMARY+=$'* '"$ECR_REGISTRY/$ECR_REPOSITORY"':'"${{ needs.prep.outputs.githash }}"$'\n'
+          echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+      - name: Publish image to LaunchPad
+        uses: Iterable/launchpad-publish-image-action@f3dda4c768ade023198e207a9986588a68d5600f #v3.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
