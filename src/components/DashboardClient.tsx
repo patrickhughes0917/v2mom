@@ -3,8 +3,6 @@
 import VisionCard from "@/components/VisionCard";
 import ValuesGrid from "@/components/ValuesGrid";
 import MethodCard from "@/components/MethodCard";
-import SimpleChart from "@/components/SimpleChart";
-import ActivityFeed from "@/components/ActivityFeed";
 import Link from "next/link";
 
 export interface V2MOMData {
@@ -17,7 +15,11 @@ export interface V2MOMData {
     description: string;
     measures: (
       | string
-      | { text: string; dataSource: "jira_gsrr" | "jira_agentic" | "static" | "jellyfish_ktlo"; percent?: number }
+      | { text: string; dataSource: "jira_gsrr" | "jira_agentic" | "jira_smart_action_items" | "static" | "jellyfish_ktlo" | "jellyfish_lead_time"; percent?: number; tbd?: boolean }
+      | { text: string; dataSource: "static_progress"; current: number; target: number; unit?: string }
+      | { text: string; dataSource: "static_target"; value: number; target: number; unit: string; lowerIsBetter?: boolean }
+      | { text: string; dataSource: "static_binary"; done: boolean }
+      | { text: string; dataSource: "devex_survey"; surveyUrl?: string; devexIndex?: { score: number; trend: number }; topics?: { name: string; priority: number; score: number; trend: number; priorityTopic?: boolean }[] }
       | { text: string; dataSource: "cogs_savings"; monthlySavings: number; targetAnnual: number; landedDate: string }
     )[];
   }[];
@@ -29,28 +31,50 @@ interface DashboardClientProps {
   data: V2MOMData;
 }
 
+function getCurrentFiscalPeriod() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  // FY starts Feb 1: FY = calendar year + 1 when month >= 2
+  const fy = month >= 2 ? year + 1 : year;
+  let q: number;
+  let months: string;
+  if (month >= 2 && month <= 4)       { q = 1; months = "Feb–Apr"; }
+  else if (month >= 5 && month <= 7)  { q = 2; months = "May–Jul"; }
+  else if (month >= 8 && month <= 10) { q = 3; months = "Aug–Oct"; }
+  else                                { q = 4; months = "Nov–Jan"; }
+  return { fy, q, months };
+}
+
 export default function DashboardClient({ data }: DashboardClientProps) {
+  const { fy, q, months } = getCurrentFiscalPeriod();
+
   return (
     <div className="min-h-screen">
-      <header className="border-b border-slate-700/50 bg-[var(--card)]/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-[var(--accent)]">Engineering V2MOM Dashboard</h1>
-          <nav className="flex gap-4">
+      <header className="border-b border-slate-700/50 bg-[var(--card)]/60 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className="text-slate-500 text-xs font-mono uppercase tracking-widest">Iterable Engineering</span>
+            <span className="text-slate-700">·</span>
+            <span className="text-white font-semibold text-sm">V2MOM</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-slate-400 text-xs font-mono">
+              FY{fy} · Q{q}
+              <span className="text-slate-600 ml-1.5">{months}</span>
+            </span>
+            <div className="w-px h-4 bg-slate-700" />
             <Link
               href="/settings"
-              className="text-slate-400 hover:text-white transition-colors text-sm"
+              className="text-slate-500 hover:text-slate-300 transition-colors text-xs"
             >
               Data Sources
             </Link>
-          </nav>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <p className="text-[var(--accent)] font-mono text-sm uppercase tracking-wider">FY27</p>
-          <h2 className="text-xl text-slate-300 mt-1">Engineering V2MOM: The Year of Nova</h2>
-        </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         <section className="mb-10">
           <VisionCard
@@ -64,13 +88,13 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           <ValuesGrid values={data.values} />
         </section>
 
-        <section className="mb-10">
-          <div className="flex items-center gap-2 mb-4">
-            <p className="text-[var(--accent)] font-mono text-sm uppercase tracking-wider">
-              Methods & Measures
-            </p>
+        <section>
+          <div className="flex items-center gap-3 mb-5">
+            <p className="text-[var(--accent)] font-mono text-xs uppercase tracking-widest">Methods & Measures</p>
+            <div className="flex-1 h-px bg-slate-700/50" />
+            <span className="text-slate-600 text-xs font-mono">{data.methods.length} methods</span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {data.methods.map((method) => (
               <MethodCard
                 key={method.id}
@@ -84,20 +108,6 @@ export default function DashboardClient({ data }: DashboardClientProps) {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-slate-700/50">
-          <div className="lg:col-span-2">
-            <SimpleChart data={data.chartData} />
-            <p className="text-slate-500 text-xs mt-2">
-              Connect Jira, Jellyfish, or other data sources to show live metrics here.
-            </p>
-            <p className="text-slate-600 text-xs mt-1">
-              EO-52 · Test deployment workflow ✓
-            </p>
-          </div>
-          <div>
-            <ActivityFeed items={data.recentActivity} />
-          </div>
-        </div>
       </main>
     </div>
   );

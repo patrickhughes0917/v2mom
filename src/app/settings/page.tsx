@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const DATA_SOURCES = [
@@ -14,9 +14,16 @@ const DATA_SOURCES = [
   {
     id: "jellyfish",
     name: "Jellyfish",
-    description: "KTLO allocations, Lever metrics, engineering effort",
+    description: "KTLO, lead time, company metrics",
     envVars: ["JELLYFISH_API_TOKEN"],
     docsUrl: "https://help.jellyfish.co/hc/en-us/articles/29135614810893-Jellyfish-API-Beta",
+  },
+  {
+    id: "jellyfish-devex",
+    name: "Jellyfish DevEx",
+    description: "Developer survey, SPACE categories (API not yet public)",
+    envVars: ["DEVEX_API_TOKEN"],
+    docsUrl: "https://jellyfish.co/platform/devex",
   },
   {
     id: "github",
@@ -31,6 +38,13 @@ const DATA_SOURCES = [
     description: "Incidents, MTTR, reliability metrics",
     envVars: ["INCIDENT_IO_API_KEY"],
     docsUrl: "https://api-docs.incident.io/",
+  },
+  {
+    id: "sigma",
+    name: "Sigma",
+    description: "Dashboard data, workbook exports",
+    envVars: ["SIGMA_CLIENT_ID", "SIGMA_CLIENT_SECRET"],
+    docsUrl: "https://help.sigmacomputing.com/docs/get-started-with-sigmas-api",
   },
   {
     id: "slack",
@@ -48,8 +62,31 @@ const DATA_SOURCES = [
   },
 ];
 
+interface StatusResult {
+  id: string;
+  name: string;
+  configured: boolean;
+  status: "ok" | "error" | "not_configured";
+  message?: string;
+  source?: string;
+}
+
 export default function SettingsPage() {
   const [expandedSource, setExpandedSource] = useState<string | null>(null);
+  const [status, setStatus] = useState<{
+    results: StatusResult[];
+    summary: { total: number; ok: number; error: number; notConfigured: number };
+  } | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
+
+  useEffect(() => {
+    if (!statusLoading) return;
+    fetch("/api/status")
+      .then((r) => r.json())
+      .then(setStatus)
+      .catch(() => setStatus(null))
+      .finally(() => setStatusLoading(false));
+  }, [statusLoading]);
 
   return (
     <div className="min-h-screen">
@@ -73,6 +110,51 @@ export default function SettingsPage() {
           <p className="text-slate-400 mt-1">
             Connect APIs to power your dashboard. API keys are stored securely and never exposed to the browser.
           </p>
+        </div>
+
+        <div className="mb-8 p-6 rounded-xl bg-slate-800/30 border border-slate-700/50">
+          <h3 className="font-semibold text-white mb-2">Connection status</h3>
+          <p className="text-slate-400 text-sm mb-4">
+            Check which integrations are configured and responding.
+          </p>
+          <button
+            onClick={() => setStatusLoading(true)}
+            disabled={statusLoading}
+            className="px-4 py-2 rounded-lg bg-[var(--accent)] text-slate-900 font-medium hover:opacity-90 disabled:opacity-70 transition-opacity"
+          >
+            {statusLoading ? "Checking…" : "Check status"}
+          </button>
+          {status && !statusLoading && (
+            <div className="mt-4 space-y-2">
+              {status.results.map((r) => (
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-4 py-2 border-b border-slate-700/30 last:border-0"
+                >
+                  <span className="text-slate-300 font-medium">{r.name}</span>
+                  <span className="flex items-center gap-2">
+                    {r.source && (
+                      <span className="text-slate-500 text-xs">({r.source})</span>
+                    )}
+                    {r.status === "ok" && (
+                      <span className="text-[var(--success)] font-medium">✓ Live</span>
+                    )}
+                    {r.status === "error" && (
+                      <span className="text-amber-400 text-sm">
+                        ✗ {r.message?.slice(0, 50) ?? "Error"}
+                      </span>
+                    )}
+                    {r.status === "not_configured" && (
+                      <span className="text-slate-500 text-sm">Not configured</span>
+                    )}
+                  </span>
+                </div>
+              ))}
+              <div className="pt-2 text-slate-500 text-sm">
+                {status.summary.ok} live · {status.summary.error} error · {status.summary.notConfigured} not configured
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">

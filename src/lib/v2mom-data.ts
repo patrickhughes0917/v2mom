@@ -39,13 +39,24 @@ export const v2momData = {
       description:
         "Build and maintain a best-in-class martech platform that guarantees industry-leading communication speed, reliability and security. We will achieve this by hardening our core services to meet strict performance and security SLOs, ensuring customers can reach their users when it counts. We will execute this with a focus on cost efficiency, leveraging automated scaling and architectural optimizations. We provide clear, actionable product limits and enforce them.",
       measures: [
-        "Meet 100% of SLO targets for the Core platform and 100% compliance with all customer SLAs every quarter.",
+        {
+          text: "Meet 100% of SLO targets for the Core platform and 100% compliance with all customer SLAs every quarter.",
+          dataSource: "static" as const,
+          percent: 100,
+          periodLabel: "February",
+        },
         {
           text: "100% of high/medium security vulnerabilities on customer-facing tests remediated within the enterprise SLA every quarter.",
           dataSource: "jira_gsrr" as const,
         },
-        "Reduce ES‑driven negative‑margin organization by X% vs FY26.",
-        "Reduce ES/ingestion‑related Sev1/Sev2 customer incidents by X% vs FY26 baseline.",
+        {
+          text: "Reduce ES‑driven negative‑margin organization by 50% vs FY26.",
+          dataSource: "sigma_es_negative_margin" as const,
+        },
+        {
+          text: "Reduce ES/ingestion‑related Sev1/Sev2 customer incidents by 50% vs FY26 baseline.",
+          dataSource: "incident_io_es_ingestion" as const,
+        },
         {
           text: "Reduce COGS by $500K annually by optimizing infrastructure and reducing third-party costs.",
           dataSource: "cogs_savings" as const,
@@ -96,9 +107,20 @@ export const v2momData = {
           text: "Reduce Keep the Lights On (KTLO) work from 42% to 25%.",
           dataSource: "jellyfish_ktlo" as const,
         },
-        "30% reduction in Eng-dependent support tickets requiring engineering support.",
-        "80% of engineers become AI Power Users, using AI-assisted coding 4-5 times a week.",
-        "Reduce retrospective mean completion time from 10 days to 3 days.",
+        {
+          text: "30% reduction in Eng-dependent support tickets requiring engineering support.",
+          dataSource: "jira_support_tickets" as const,
+        },
+        {
+          text: "80% of engineers become AI Power Users, using AI-assisted coding 4-5 times a week.",
+          dataSource: "jellyfish_ai_power_users" as const,
+          powerUserCount: 33,
+          powerUserTotal: 122,
+        },
+        {
+          text: "Reduce retrospective mean completion time from 10 days to 3 days.",
+          dataSource: "incident_io_retrospective" as const,
+        },
       ],
     },
     {
@@ -108,13 +130,51 @@ export const v2momData = {
       description:
         "Scale our global engineering footprint to drive innovation through strategic growth and distributed team investment. All teams have clear charters enabling autonomous operation. New teams are set up for success with sufficient knowledge transfer. All engineers are fully integrated into Engineering culture with first-class developer experience.",
       measures: [
-        "3 new teams will be completely built and operating in the Lisbon hub by the end of FY27.",
-        "Establish 80% of Lisbon-based teams as fully autonomous units with local leadership owning core product/technology components.",
-        "ASG gets at least one representative based from Lisbon.",
-        "Engineering Attrition below X% annualized.",
-        "Time to Hire is below X days.",
-        "Hire Principal Architect.",
-        "Achieving X+ external technical contributions (blog posts, speaker sessions at AWS re:Invent, KubeCon, etc).",
+        {
+          text: "3 new teams will be completely built and operating in the Lisbon hub by the end of FY27.",
+          dataSource: "static_progress" as const,
+          current: 0,
+          target: 3,
+          unit: "teams",
+        },
+        {
+          text: "Establish 80% of Lisbon-based teams as fully autonomous units with local leadership owning core product/technology components.",
+          dataSource: "static" as const,
+          percent: 0,
+        },
+        {
+          text: "ASG gets at least one representative based from Lisbon.",
+          dataSource: "static_progress" as const,
+          current: 0,
+          target: 1,
+          unit: "",
+        },
+        {
+          text: "Engineering Attrition below 12% annualized.",
+          dataSource: "attrition" as const,
+          departures: 6,
+          headcount: 135,
+        },
+        {
+          text: "Time to Hire is below X days.",
+          dataSource: "static" as const,
+          percent: 0,
+          tbd: true,
+        },
+        {
+          text: "Hire Principal Architect.",
+          dataSource: "static_progress" as const,
+          current: 0,
+          target: 1,
+          unit: "",
+        },
+        {
+          text: "Achieving 5+ external technical contributions (blog posts, speaker sessions at AWS re:Invent, KubeCon, etc).",
+          dataSource: "static_progress" as const,
+          current: 0,
+          target: 5,
+          unit: "contributions",
+        },
       ],
     },
     {
@@ -124,8 +184,22 @@ export const v2momData = {
       description:
         "Eliminate delivery friction by modernizing CI/CD infrastructure and streamlining quarterly planning lifecycle. Reduce Idea-to-Production lead time through faster build/test cycles and automated deployments. Proactively map dependencies and remove planning bottlenecks. Ensure the system protects itself against overload and limits blast radius of failures.",
       measures: [
-        "Decrease Change Lead Time by X%, as measured by Jira tickets with PRs in In Progress status.",
-        "Improve X SPACE categories in our developer survey by Y%.",
+        {
+          text: "Decrease Change Lead Time to less than 7 days, as measured by Jira tickets with PRs in In Progress status.",
+          dataSource: "jellyfish_lead_time" as const,
+        },
+        {
+          text: "Improve our top 4 DevEx categories (Release Process, Codebase Health, Code Review, Context Switching) by X%.",
+          dataSource: "devex_survey" as const,
+          surveyUrl: "https://devex.jellyfish.co/study/9035cdcc-4ae1-4a98-98dd-520325a7b8f4/analyze/insights",
+          devexIndex: { score: 56, trend: -3 },
+          topics: [
+            { name: "Release Process", priority: 1, score: 42, trend: -9 },
+            { name: "Codebase Health", priority: 2, score: 45, trend: -3 },
+            { name: "Code Review", priority: 3, score: 50, trend: -14 },
+            { name: "Context Switching", priority: 4, score: 28, trend: -17 },
+          ],
+        },
         "Increase engagement score from x% to y%.",
       ],
     },
@@ -141,10 +215,22 @@ export const v2momData = {
           dataSource: "static" as const,
           percent: 100,
         },
-        "100% of Engineering V2MOM measures are dashboarded and reviewed on a monthly basis in a centralized Execution Dashboard by the end of Q1.",
-        "Achieve a 90% Data Hygiene score across Jira and Jellyfish to ensure real-time reporting accuracy and resource allocation.",
+        {
+          text: "100% of Engineering V2MOM measures are dashboarded and reviewed on a monthly basis in a centralized Execution Dashboard by the end of Q1.",
+          dataSource: "static" as const,
+          percent: 50,
+        },
+        {
+          text: "Achieve a 90% Data Hygiene score across Jira and Jellyfish to ensure real-time reporting accuracy and resource allocation.",
+          dataSource: "static" as const,
+          percent: 75,
+          tbd: true,
+        },
         "90% of feature teams use a standardized Execution Dashboard to provide transparency into project health and predictability.",
-        "90% of SMART Action Items from SEV1/SEV2s are completed QoQ to ensure systemic reliability.",
+        {
+          text: "90% of SMART Action Items from SEV1/SEV2s are completed QoQ to ensure systemic reliability.",
+          dataSource: "jira_smart_action_items" as const,
+        },
         "Establish an Engineering IP pipeline that converts priority roadmap work into defensible IP by filing 5 patents in FY27.",
       ],
     },
