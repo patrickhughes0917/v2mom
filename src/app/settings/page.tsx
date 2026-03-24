@@ -7,9 +7,16 @@ const DATA_SOURCES = [
   {
     id: "jira",
     name: "Jira",
-    description: "Sprint velocity, issues, cycle time, burndown",
-    envVars: ["JIRA_DOMAIN", "JIRA_EMAIL", "JIRA_API_TOKEN"],
+    description: "GSRR SLO compliance, sprint velocity, issues, cycle time",
+    envVars: ["JIRA_EMAIL", "JIRA_API_TOKEN", "JIRA_BASE_URL"],
     docsUrl: "https://developer.atlassian.com/cloud/jira/platform/rest/v3/",
+  },
+  {
+    id: "jellyfish",
+    name: "Jellyfish",
+    description: "KTLO allocations, Lever metrics, engineering effort",
+    envVars: ["JELLYFISH_API_TOKEN"],
+    docsUrl: "https://help.jellyfish.co/hc/en-us/articles/29135614810893-Jellyfish-API-Beta",
   },
   {
     id: "github",
@@ -33,13 +40,6 @@ const DATA_SOURCES = [
     docsUrl: "https://api.slack.com/",
   },
   {
-    id: "vercel",
-    name: "Vercel",
-    description: "Deployments, build success rate",
-    envVars: ["VERCEL_TOKEN"],
-    docsUrl: "https://vercel.com/docs/rest-api",
-  },
-  {
     id: "custom",
     name: "Custom API",
     description: "Any REST API with HTTPS",
@@ -59,9 +59,6 @@ export default function SettingsPage() {
           <nav className="flex gap-4">
             <Link href="/" className="text-slate-400 hover:text-white transition-colors text-sm">
               Dashboard
-            </Link>
-            <Link href="/login" className="text-slate-400 hover:text-white transition-colors text-sm">
-              Sign In
             </Link>
           </nav>
         </div>
@@ -102,7 +99,7 @@ export default function SettingsPage() {
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Environment variables needed</h4>
                     <p className="text-slate-400 text-sm mb-3">
                       Add these to <code className="bg-slate-700 px-1 rounded">.env.local</code> for local
-                      development, and to Vercel Environment Variables for production.
+                      development, and to your server&apos;s environment variables for production.
                     </p>
                     <ul className="space-y-1">
                       {source.envVars.map((v) => (

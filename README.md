@@ -1,13 +1,14 @@
 # Engineering V2MOM Dashboard
 
-A centralized dashboard for measuring engineering progress across Vision, Values, Methods, Obstacles, and Measures. Connects to different data sources via API. Built with Next.js, Supabase, and designed to deploy on Vercel.
+**Repository:** [github.com/Iterable/InternalEngOpsTooling](https://github.com/Iterable/InternalEngOpsTooling)
+
+A centralized dashboard for measuring engineering progress across Vision, Values, Methods, Obstacles, and Measures. Connects to different data sources via API. Built with Next.js, designed for internal hosting on your own infrastructure.
 
 ## What You Get
 
 - **V2MOM structure** – Five pillar sections (Vision, Values, Methods, Obstacles, Measures)
 - **Dashboard** with metrics, charts, and activity feed
-- **Data Sources settings** – Add and manage integrations (Jira, GitHub, Incident.io, Slack, Vercel, Custom API)
-- **Sign in / Sign up** with Supabase (email & password)
+- **Data Sources settings** – Add and manage integrations (Jira, Jellyfish, GitHub, Incident.io, Slack, Custom API)
 - **API proxy** to safely connect to external APIs without exposing your keys
 - **Dark theme** that's easy on the eyes
 
@@ -23,81 +24,51 @@ A centralized dashboard for measuring engineering progress across Vision, Values
 
 ### 2. Install Dependencies
 
-Open Terminal (Mac) or Command Prompt (Windows) and run:
-
 ```bash
 cd V2MOM
 npm install
 ```
 
-### 3. Create a Supabase Project
+### 3. Add Environment Variables
 
-1. Go to [supabase.com](https://supabase.com) and sign up (free)
-2. Click **New Project**
-3. Name it (e.g. "v2mom-dashboard"), set a database password, choose a region
-4. Wait for the project to be created
-5. Go to **Settings** → **API** in the left sidebar
-6. Copy the **Project URL** and **anon public** key
+1. Copy `.env.local.example` to `.env.local`
+2. Add your API keys (JIRA, Jellyfish, etc.) — see the file for required variables
 
-### 4. Add Your Supabase Keys
+### 4. Run the Dashboard Locally
 
-1. Copy the file `.env.local.example` and rename it to `.env.local`
-2. Open `.env.local` and paste your Supabase URL and key:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```bash
+npm run build
+npm run start
 ```
 
-### 5. Run the Dashboard Locally
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+For development with hot reload:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
 ---
 
-## Hosting on Vercel
+## Deploying Internally
 
-### What You Need
+1. Build: `npm run build`
+2. Run: `npm run start` (or use PM2 for process management)
+3. Set environment variables on your server
+4. Use nginx or a reverse proxy for HTTPS if needed
 
-- **Vercel account** – Free at [vercel.com](https://vercel.com) (sign in with GitHub)
-- **GitHub repo** – Your code pushed to [github.com/patrickhughes0917/v2mom](https://github.com/patrickhughes0917/v2mom)
-- **Supabase project** – For auth (see Setup above)
-
-Vercel automatically detects Next.js and configures the build. No extra config needed.
-
-### Deploy Steps
-
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) and sign in with GitHub
-3. Click **Add New** → **Project**
-4. Import your `v2mom` repository
-5. Before deploying, add **Environment Variables**:
-   - `NEXT_PUBLIC_SUPABASE_URL` = your Supabase project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = your Supabase anon/public key
-   - (Optional) Add API keys for data sources: `JIRA_API_TOKEN`, `GITHUB_TOKEN`, etc.
-6. Click **Deploy**
-
-Your dashboard will be live at a URL like `v2mom.vercel.app` (or a custom domain if you add one).
-
-### After Deployment
-
-- Every push to `main` triggers a new deployment
-- Environment variables are set in Vercel Dashboard → Project → Settings → Environment Variables
-- View logs in Vercel Dashboard → Project → Deployments → [click a deployment]
+The app runs on port 3000 by default. Deploy to your internal infrastructure (e.g. VM, container, or internal PaaS).
 
 ---
 
 ## Connecting Real Data Sources
 
-Right now the dashboard shows **demo data**. To connect real APIs (Jira, Slack, etc.):
+Right now the dashboard shows **demo data** for some sections. To connect real APIs (Jira, Jellyfish, etc.):
 
-1. Add your API keys to `.env.local` (and Vercel Environment Variables when deploying)
-2. Create new API routes in `src/app/api/` that fetch from those services
-3. Update the dashboard to call your new routes instead of `/api/demo`
+1. Add your API keys to `.env.local` (and your server's environment variables when deploying)
+2. API routes in `src/app/api/` already fetch from JIRA (GSRR, agentic launches) and Jellyfish (KTLO)
+3. Add new routes for additional integrations as needed
 
 The `/api/proxy` route is a generic proxy—you can POST to it with a URL and headers to fetch from any HTTPS API. Use it from your own API routes to keep keys server-side.
 
@@ -110,15 +81,13 @@ V2MOM/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx          # Main dashboard
-│   │   ├── login/page.tsx    # Sign in / Sign up
-│   │   └── api/
-│   │       ├── demo/         # Demo data (replace with real APIs)
-│   │       └── proxy/        # Generic API proxy
+│   │   ├── settings/         # Data sources config
+│   │   └── api/              # API routes (JIRA, Jellyfish, etc.)
 │   ├── components/           # Reusable UI pieces
 │   └── lib/
-│       └── supabase/        # Supabase client setup
+│       └── v2mom-data.ts     # Dashboard content
 ├── .env.local.example       # Template for your secrets
-└── README.md               # This file
+└── README.md
 ```
 
 ---
@@ -126,5 +95,3 @@ V2MOM/
 ## Need Help?
 
 - [Next.js docs](https://nextjs.org/docs)
-- [Supabase docs](https://supabase.com/docs)
-- [Vercel docs](https://vercel.com/docs)
